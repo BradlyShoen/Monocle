@@ -72,9 +72,8 @@ if($args.Count -eq 2){
         #TIMER FUNCTIONALITY
         Write-Host $global:currentIndex
         if($global:slides.count -gt 1 -or $global:refreshedOnce -eq $false){
-            #Remove our current slide from the Window and refresh canvas
+            #Remove our current slide from the Window
             $global:Window.controls.remove($global:currentSlide)
-            $global:Window.Refresh()
 
             #Increase our current slide index and make sure we dont go out of bounds
             $global:currentIndex = $global:currentIndex + 1
@@ -149,6 +148,7 @@ if($args.Count -eq 2){
             }
             $global:slides = $global:slides + $newSlide
         }
+        $global:currentIndex = 0
         
 
         #Create a file system watcher that will refresh our slides when a new file is added/deleted to the location folder so we don't have to restart the program
@@ -166,6 +166,7 @@ if($args.Count -eq 2){
                 $global:slides = $global:slides + $newSlide
             }
             $global:refreshedOnce = $false
+            $global:currentIndex = 0
         }
         $onDeleted = Register-ObjectEvent $fsw Deleted -SourceIdentifier FileDeleted -Action {
             $global:slides = @()
@@ -179,14 +180,8 @@ if($args.Count -eq 2){
                 $global:slides = $global:slides + $newSlide
             }
             $global:refreshedOnce = $false
-            
-        }
-
-        #Initialize our current slide index to be a random index (starts the display at a random slide)
-        if($global:slides.Count-1 -gt 0){
-            $global:currentIndex = Get-Random -Minimum 0 -Maximum ($global:slides.Count-1)
-        }else{
             $global:currentIndex = 0
+            
         }
 
         #Setup our initial image for our current slide and initialize our offsets to center the image vertically and horizontally.
@@ -355,12 +350,11 @@ if($args.Count -eq 2){
     $timer = New-Object System.Windows.Forms.Timer
     $timer.add_tick({
         
-        Write-Host $global:currentIndex
         #TIMER FUNCTIONALITY
+        Write-Host $global:currentIndex
         if($global:slides.count -gt 1 -or $global:refreshedOnce -eq $false){
             #Remove our current slide from the Window and refresh canvas
             $global:Window.controls.remove($global:currentSlide)
-            $global:Window.Refresh()
 
             #Increase our current slide index and make sure we dont go out of bounds
             $global:currentIndex = $global:currentIndex + 1
@@ -435,6 +429,7 @@ if($args.Count -eq 2){
             }
             $global:slides = $global:slides + $newSlide
         }
+        $global:currentIndex = 0
         
 
         #Create a file system watcher that will refresh our slides when a new file is added/deleted to the location folder so we don't have to restart the program
@@ -452,6 +447,7 @@ if($args.Count -eq 2){
                 $global:slides = $global:slides + $newSlide
             }
             $global:refreshedOnce = $false
+            $global:currentIndex = 0
             
         }
         $onDeleted = Register-ObjectEvent $fsw Deleted -SourceIdentifier FileDeleted -Action {
@@ -466,12 +462,6 @@ if($args.Count -eq 2){
                 $global:slides = $global:slides + $newSlide
             }
             $global:refreshedOnce = $false
-        }
-
-        #Initialize our current slide index to be a random index (starts the display at a random slide)
-        if($global:slides.Count-1 -gt 0){
-            $global:currentIndex = Get-Random -Minimum 0 -Maximum ($global:slides.Count-1)
-        }else{
             $global:currentIndex = 0
         }
 
