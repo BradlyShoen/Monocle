@@ -45,6 +45,8 @@ Function ResizeImage() {
     $graph.Clear([System.Drawing.Color]::White)
     $graph.DrawImage($img, 0, 0, $newWidth, $newHeight)
 
+    $img.Dispose()
+
     return $bmpResized
 }
 
@@ -68,39 +70,43 @@ if($args.Count -eq 2){
     $timer.add_tick({
 
         #TIMER FUNCTIONALITY
+        Write-Host $global:currentIndex
+        if($global:slides.count -gt 1 -or $global:refreshedOnce -eq $false){
+            #Remove our current slide from the Window and refresh canvas
+            $global:Window.controls.remove($global:currentSlide)
+            $global:Window.Refresh()
 
-        #Remove our current slide from the Window and refresh canvas
-        $global:Window.controls.remove($global:currentSlide)
-        $global:Window.Refresh()
+            #Increase our current slide index and make sure we dont go out of bounds
+            $global:currentIndex = $global:currentIndex + 1
+            if($global:currentIndex -gt $global:slides.Count-1){
+                $global:currentIndex = 0
+            }
 
-        #Increase our current slide index and make sure we dont go out of bounds
-        $global:currentIndex = $global:currentIndex + 1
-        if($global:currentIndex -gt $global:slides.Count-1){
-            $global:currentIndex = 0
+            #Grab image from our slides array based on the current slide index. Set our offsets so that the image will be centered vertically and horizontally.
+            $global:img = $global:slides[$global:currentIndex]
+            $global:horizontaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Width - $global:img.Width)/2
+            $global:verticaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Height - $global:img.Height)/2
+
+            #Update our current slide object to be the new image we just grabbed from slides.
+            $global:currentSlide = new-object Windows.Forms.PictureBox
+            $global:currentSlide.Height = $img.Size.Height
+            $global:currentSlide.Width = $img.Size.Width
+            $global:currentSlide.location = New-Object System.Drawing.Point($global:horizontaloffset,$global:verticaloffset)
+            $global:currentSlide.Image = $img
+            #Hide mouse cursor when hovering over the display and show when it is not
+            $global:currentSlide.Add_MouseEnter({
+                [System.Windows.Forms.Cursor]::Hide()
+            })
+            $global:currentSlide.Add_MouseLeave( {
+                [System.Windows.Forms.Cursor]::Show()
+            })
+
+            #Add our current slide back to the Window and refresh canvas
+            $global:Window.controls.add($global:currentSlide)
+            $global:Window.Refresh()
+
+            $global:refreshedOnce = $true
         }
-
-        #Grab image from our slides array based on the current slide index. Set our offsets so that the image will be centered vertically and horizontally.
-        $global:img = $global:slides[$global:currentIndex]
-        $global:horizontaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Width - $global:img.Width)/2
-        $global:verticaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Height - $global:img.Height)/2
-
-        #Update our current slide object to be the new image we just grabbed from slides.
-        $global:currentSlide = new-object Windows.Forms.PictureBox
-        $global:currentSlide.Height = $img.Size.Height
-        $global:currentSlide.Width = $img.Size.Width
-        $global:currentSlide.location = New-Object System.Drawing.Point($global:horizontaloffset,$global:verticaloffset)
-        $global:currentSlide.Image = $img
-        #Hide mouse cursor when hovering over the display and show when it is not
-        $global:currentSlide.Add_MouseEnter({
-            [System.Windows.Forms.Cursor]::Hide()
-        })
-        $global:currentSlide.Add_MouseLeave( {
-            [System.Windows.Forms.Cursor]::Show()
-        })
-
-        #Add our current slide back to the Window and refresh canvas
-        $global:Window.controls.add($global:currentSlide)
-        $global:Window.Refresh()
 
     })
 
@@ -143,6 +149,7 @@ if($args.Count -eq 2){
             }
             $global:slides = $global:slides + $newSlide
         }
+        
 
         #Create a file system watcher that will refresh our slides when a new file is added/deleted to the location folder so we don't have to restart the program
         $fsw = New-Object System.IO.FileSystemWatcher($SlidesLocation.Text, '*.*')
@@ -158,6 +165,7 @@ if($args.Count -eq 2){
                 }
                 $global:slides = $global:slides + $newSlide
             }
+            $global:refreshedOnce = $false
         }
         $onDeleted = Register-ObjectEvent $fsw Deleted -SourceIdentifier FileDeleted -Action {
             $global:slides = @()
@@ -170,6 +178,8 @@ if($args.Count -eq 2){
                 }
                 $global:slides = $global:slides + $newSlide
             }
+            $global:refreshedOnce = $false
+            
         }
 
         #Initialize our current slide index to be a random index (starts the display at a random slide)
@@ -344,41 +354,45 @@ if($args.Count -eq 2){
     #Initialize our timer that will control our slide transition
     $timer = New-Object System.Windows.Forms.Timer
     $timer.add_tick({
-
+        
+        Write-Host $global:currentIndex
         #TIMER FUNCTIONALITY
+        if($global:slides.count -gt 1 -or $global:refreshedOnce -eq $false){
+            #Remove our current slide from the Window and refresh canvas
+            $global:Window.controls.remove($global:currentSlide)
+            $global:Window.Refresh()
 
-        #Remove our current slide from the Window and refresh canvas
-        $global:Window.controls.remove($global:currentSlide)
-        $global:Window.Refresh()
+            #Increase our current slide index and make sure we dont go out of bounds
+            $global:currentIndex = $global:currentIndex + 1
+            if($global:currentIndex -gt $global:slides.Count-1){
+                $global:currentIndex = 0
+            }
 
-        #Increase our current slide index and make sure we dont go out of bounds
-        $global:currentIndex = $global:currentIndex + 1
-        if($global:currentIndex -gt $global:slides.Count-1){
-            $global:currentIndex = 0
+            #Grab image from our slides array based on the current slide index. Set our offsets so that the image will be centered vertically and horizontally.
+            $global:img = $global:slides[$global:currentIndex]
+            $global:horizontaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Width - $global:img.Width)/2
+            $global:verticaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Height - $global:img.Height)/2
+
+            #Update our current slide object to be the new image we just grabbed from slides.
+            $global:currentSlide = new-object Windows.Forms.PictureBox
+            $global:currentSlide.Height = $img.Size.Height
+            $global:currentSlide.Width = $img.Size.Width
+            $global:currentSlide.location = New-Object System.Drawing.Point($global:horizontaloffset,$global:verticaloffset)
+            $global:currentSlide.Image = $img
+            #Hide mouse cursor when hovering over the display and show when it is not
+            $global:currentSlide.Add_MouseEnter({
+                [System.Windows.Forms.Cursor]::Hide()
+            })
+            $global:currentSlide.Add_MouseLeave( {
+                [System.Windows.Forms.Cursor]::Show()
+            })
+
+            #Add our current slide back to the Window and refresh canvas
+            $global:Window.controls.add($global:currentSlide)
+            $global:Window.Refresh()
+
+            $global:refreshedOnce = $true
         }
-
-        #Grab image from our slides array based on the current slide index. Set our offsets so that the image will be centered vertically and horizontally.
-        $global:img = $global:slides[$global:currentIndex]
-        $global:horizontaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Width - $global:img.Width)/2
-        $global:verticaloffset = ([System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Height - $global:img.Height)/2
-
-        #Update our current slide object to be the new image we just grabbed from slides.
-        $global:currentSlide = new-object Windows.Forms.PictureBox
-        $global:currentSlide.Height = $img.Size.Height
-        $global:currentSlide.Width = $img.Size.Width
-        $global:currentSlide.location = New-Object System.Drawing.Point($global:horizontaloffset,$global:verticaloffset)
-        $global:currentSlide.Image = $img
-        #Hide mouse cursor when hovering over the display and show when it is not
-        $global:currentSlide.Add_MouseEnter({
-            [System.Windows.Forms.Cursor]::Hide()
-        })
-        $global:currentSlide.Add_MouseLeave( {
-            [System.Windows.Forms.Cursor]::Show()
-        })
-
-        #Add our current slide back to the Window and refresh canvas
-        $global:Window.controls.add($global:currentSlide)
-        $global:Window.Refresh()
 
     })
 
@@ -421,6 +435,7 @@ if($args.Count -eq 2){
             }
             $global:slides = $global:slides + $newSlide
         }
+        
 
         #Create a file system watcher that will refresh our slides when a new file is added/deleted to the location folder so we don't have to restart the program
         $fsw = New-Object System.IO.FileSystemWatcher($SlidesLocation.Text, '*.*')
@@ -436,6 +451,8 @@ if($args.Count -eq 2){
                 }
                 $global:slides = $global:slides + $newSlide
             }
+            $global:refreshedOnce = $false
+            
         }
         $onDeleted = Register-ObjectEvent $fsw Deleted -SourceIdentifier FileDeleted -Action {
             $global:slides = @()
@@ -448,6 +465,7 @@ if($args.Count -eq 2){
                 }
                 $global:slides = $global:slides + $newSlide
             }
+            $global:refreshedOnce = $false
         }
 
         #Initialize our current slide index to be a random index (starts the display at a random slide)
@@ -517,7 +535,7 @@ if($args.Count -eq 2){
     $SlidesLocation.height = 20
     $SlidesLocation.location = New-Object System.Drawing.Point(78,71)
     $SlidesLocation.Font = 'Microsoft Sans Serif,13'
-    $SlidesLocation.Text = "$PSScriptRoot\Example"
+    $SlidesLocation.Text = "Example"
 
     #Initialize our Slides Duration Label ie text that says "Slide Duration: "
     $DurationLabel = New-Object system.Windows.Forms.Label
