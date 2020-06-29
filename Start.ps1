@@ -136,7 +136,7 @@ $Start.Add_Click({
     #START BUTTON CODE
 
     #Grab every image at the specified slides directory (slides location textbox in GUI), resize the image, and add it to our slides array
-    $files = Get-ChildItem $SlidesLocation.Text -Recurse -Include *.jpg,*.jpeg,*.png,*.gif -ErrorAction SilentlyContinue
+    $files = Get-ChildItem ($SlidesLocation.Text+"\*") -Include *.jpg,*.jpeg,*.png,*.gif -ErrorAction SilentlyContinue
     for ($i=0; $i -lt $files.Count; $i++) {
         if($files[$i].extension -eq ".gif"){
             $newSlide = [Drawing.Image]::FromFile($files[$i].FullName)
@@ -153,7 +153,7 @@ $Start.Add_Click({
     $fsw.EnableRaisingEvents = $true
     $onCreated = Register-ObjectEvent $fsw Created -SourceIdentifier FileCreated -Action {
         $global:slides = @()
-        $files = Get-ChildItem $SlidesLocation.Text -Recurse -Include *.jpg,*.jpeg,*.png,*.gif -ErrorAction SilentlyContinue
+        $files = Get-ChildItem ($SlidesLocation.Text+"\*") -Include *.jpg,*.jpeg,*.png,*.gif -ErrorAction SilentlyContinue
         for ($i=0; $i -lt $files.Count; $i++) {
             if($files[$i].extension -eq ".gif"){
                 $newSlide = [Drawing.Image]::FromFile($files[$i].FullName)
@@ -168,7 +168,7 @@ $Start.Add_Click({
     }
     $onDeleted = Register-ObjectEvent $fsw Deleted -SourceIdentifier FileDeleted -Action {
         $global:slides = @()
-        $files = Get-ChildItem $SlidesLocation.Text -Recurse -Include *.jpg,*.jpeg,*.png,*.gif -ErrorAction SilentlyContinue
+        $files = Get-ChildItem ($SlidesLocation.Text+"\*") -Include *.jpg,*.jpeg,*.png,*.gif -ErrorAction SilentlyContinue
         for ($i=0; $i -lt $files.Count; $i++) {
             if($files[$i].extension -eq ".gif"){
                 $newSlide = [Drawing.Image]::FromFile($files[$i].FullName)
@@ -242,8 +242,8 @@ $Start.Add_Click({
     $global:currentSlide.Add_MouseLeave( {
         [System.Windows.Forms.Cursor]::Show()
     })
-    $global:currentSlide.BringToFront()
     $global:Window.controls.add($global:currentSlide)
+    $global:currentSlide.BringToFront()
 
     #Set our timer interval (how fast our slides change) to be however long the user specified in the slides duration textbox in GUI in seconds.
     $timer.Interval = [int]$Duration.Text * 1000
@@ -446,4 +446,5 @@ try{
     Unregister-Event -SourceIdentifier FileCreated -ErrorAction SilentlyContinue
     Unregister-Event -SourceIdentifier FileDeleted -ErrorAction SilentlyContinue
     $fsw.Dispose()
+    $newSlide.Dispose()
 }catch{}
