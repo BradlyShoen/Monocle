@@ -1,6 +1,6 @@
 ﻿<#
 	Name: Bradly Shoen
-    Version: Monocle 1.0.0
+    Version: Monocle 1.2.0
 	Description: Loops through a directory of images used for digital signage. Requires input from user to specify image directory location and duration of each display. Can be run through both GUI and command line.
 #>
 
@@ -285,7 +285,7 @@ $SlidesLocation.width = 166
 $SlidesLocation.height = 20
 $SlidesLocation.location = New-Object System.Drawing.Point(78,71)
 $SlidesLocation.Font = 'Microsoft Sans Serif,13'
-if($args -ge 2){
+if($args.Count -ge 2){
     $SlidesLocation.Text = $args[0]
 }else{
     $SlidesLocation.Text = "Example"
