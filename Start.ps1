@@ -97,8 +97,12 @@ $timer.add_tick({
 
         #Add our current slide back to the Window and refresh canvas
         $global:Window.controls.add($global:currentSlide)
-        $global:topSlide.SendToBack()
-        $global:bottomSlide.SendToBack()
+        if($global:topSlide){
+            $global:topSlide.SendToBack()
+        }
+        if($global:bottomSlide){
+            $global:bottomSlide.SendToBack()
+        }
         $global:Window.Refresh()
 
         $global:refreshedOnce = $true
@@ -189,8 +193,9 @@ $Start.Add_Click({
         $topSlideVerticalOffset = 0
         $global:topSlide = new-object Windows.Forms.PictureBox
         $global:topSlide.Image = $topSlideImage
-        $global:topSlide.Width = $topSlideImage.size.Width-1
-        $global:topSlide.Height = $topSlideImage.size.Height-1
+        $global:topSlide.Width = $topSlideImage.Size.Width-2
+        $global:topSlide.Height = $topSlideImage.Size.Height-2
+        $global:topSlide.SizeMode = "CenterImage"
         $global:topSlide.location = New-Object System.Drawing.Point($topSlideHorizontalOffset,$topSlideVerticalOffset)
         $global:topSlide.BorderStyle = "None"
         #Hide mouse cursor when hovering over the display and show when it is not
@@ -210,8 +215,9 @@ $Start.Add_Click({
         $bottomSlideVerticalOffset = [System.Windows.Forms.SystemInformation]::PrimaryMonitorSize.Height-$bottomSlideImage.Height
         $global:bottomSlide = new-object Windows.Forms.PictureBox
         $global:bottomSlide.Image = $bottomSlideImage
-        $global:bottomSlide.Width = $bottomSlideImage.size.Width-1
-        $global:bottomSlide.Height = $bottomSlideImage.size.Height-1
+        $global:bottomSlide.Width = $bottomSlideImage.size.Width-2
+        $global:bottomSlide.Height = $bottomSlideImage.size.Height-2
+        $global:bottomSlide.SizeMode = "CenterImage"
         $global:bottomSlide.location = New-Object System.Drawing.Point($bottomSlideHorizontalOffset,$bottomSlideVerticalOffset)
         #Hide mouse cursor when hovering over the display and show when it is not
         $global:bottomSlide.Add_MouseEnter({
